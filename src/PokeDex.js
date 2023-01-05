@@ -1,13 +1,15 @@
 import "./App.css";
 import { useState, useEffect } from "react";
 import ReactLoading from "react-loading";
-import axios from "axios";
+// import axios from "axios";
 import Modal from "react-modal";
+import PokemonListView from "./pokemon/PokemonList";
 
 function PokeDex() {
   const [pokemons, setPokemons] = useState([]);
   const [pokemonDetail, setPokemonDetail] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+   
 
   const customStyles = {
     content: {
@@ -23,6 +25,27 @@ function PokeDex() {
     overlay: { backgroundColor: "grey" },
   };
 
+  useEffect(() => {
+    fetch("https://pokeapi.co/api/v2/pokemon")
+      .then((data) => {
+        return data.json();
+      })
+      .then((result) => {
+        setPokemons(result.results);
+        setIsLoading(false);
+      });
+  }, []);
+
+  //added to see react loading longer
+  // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // useEffect(() => {
+  //   async function makeRequest() {
+  //     await delay(5000);
+  //     setIsLoading(false);
+  //   }
+  //   makeRequest();
+  // });
+
   if (!isLoading && pokemons.length === 0) {
     return (
       <div>
@@ -31,10 +54,13 @@ function PokeDex() {
           <h2>Requirement:</h2>
           <ul>
             <li>
-              Call this api:https://pokeapi.co/api/v2/pokemon to get pokedex, and show a list of pokemon name.
+              Call this api:https://pokeapi.co/api/v2/pokemon to get pokedex,
+              and show a list of pokemon name.
             </li>
             <li>Implement React Loading and show it during API call</li>
-            <li>when hover on the list item , change the item color to yellow.</li>
+            <li>
+              when hover on the list item , change the item color to yellow.
+            </li>
             <li>when clicked the list item, show the modal below</li>
             <li>
               Add a search bar on top of the bar for searching, search will run
@@ -42,7 +68,10 @@ function PokeDex() {
             </li>
             <li>Implement sorting and pagingation</li>
             <li>Commit your codes after done</li>
-            <li>If you do more than expected (E.g redesign the page / create a chat feature at the bottom right). it would be good.</li>
+            <li>
+              If you do more than expected (E.g redesign the page / create a
+              chat feature at the bottom right). it would be good.
+            </li>
           </ul>
         </header>
       </div>
@@ -57,6 +86,7 @@ function PokeDex() {
             <div className="App">
               <header className="App-header">
                 <b>Implement loader here</b>
+                <ReactLoading type="balls" color="#fff" />
               </header>
             </div>
           </>
@@ -64,6 +94,7 @@ function PokeDex() {
           <>
             <h1>Welcome to pokedex !</h1>
             <b>Implement Pokedex list here</b>
+            <PokemonListView pokemon={pokemons} />
           </>
         )}
       </header>

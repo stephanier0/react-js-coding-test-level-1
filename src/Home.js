@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
 function Home() {
-  const [text, setText] = useState("");
+  // const [text, setText] = useState("");
   const [isReady, setIsReady] = useState(false);
 
   return (
