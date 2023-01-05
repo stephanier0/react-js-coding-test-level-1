@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactLoading from "react-loading";
 // import axios from "axios";
 import Modal from "react-modal";
@@ -7,9 +7,10 @@ import PokemonListView from "./pokemon/PokemonList";
 
 function PokeDex() {
   const [pokemons, setPokemons] = useState([]);
+  const [pokemonsFiltered, setPokemonsFiltered] = useState([]);
   const [pokemonDetail, setPokemonDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-   
+  const nameFilter = useRef();
 
   const customStyles = {
     content: {
@@ -32,10 +33,24 @@ function PokeDex() {
       })
       .then((result) => {
         setPokemons(result.results);
+        setPokemonsFiltered(result.results);
         setIsLoading(false);
       });
   }, []);
 
+  function doFilter() {
+    console.log("filter: " + nameFilter.current.value);
+    const filter = nameFilter.current.value;
+    console.log(pokemonsFiltered);
+    setPokemonsFiltered([]);
+    const temp = [];
+    for (const idx in pokemons) {
+      if (pokemons[idx].name.toLowerCase().includes(filter)) {
+        temp.push(pokemons[idx]);
+      }
+    }
+    setPokemonsFiltered(temp);
+  }
   //added to see react loading longer
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   // useEffect(() => {
@@ -94,7 +109,17 @@ function PokeDex() {
           <>
             <h1>Welcome to pokedex !</h1>
             <b>Implement Pokedex list here</b>
-            <PokemonListView pokemon={pokemons} />
+            <span>
+              Filter based on Pokemon Name:{" "}
+              <input
+                type="text"
+                required
+                id="nameFilter"
+                ref={nameFilter}
+                onKeyUp={doFilter}
+              ></input>
+            </span>
+            <PokemonListView pokemon={pokemonsFiltered} />
           </>
         )}
       </header>
@@ -116,7 +141,10 @@ function PokeDex() {
                 required in tabular format
               </li>
               <li>Create a bar chart based on the stats above</li>
-              <li>Create a  buttton to download the information generated in this modal as pdf. (images and chart must be included)</li>
+              <li>
+                Create a buttton to download the information generated in this
+                modal as pdf. (images and chart must be included)
+              </li>
             </ul>
           </div>
         </Modal>
