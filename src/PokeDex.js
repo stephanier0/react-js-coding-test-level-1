@@ -14,6 +14,9 @@ function PokeDex() {
   const nameFilter = useRef();
   const [sortIsAsc, setSortIsAsc] = useState(true);
 
+  const [offset, setOffset] = useState(0);
+  let limit = 20;
+
   const customStyles = {
     content: {
       top: "50%",
@@ -38,7 +41,14 @@ function PokeDex() {
     //     setPokemonsFiltered(result.results);
     //     setIsLoading(false);
     //   });
-    axios({ url: "https://pokeapi.co/api/v2/pokemon" })
+    // axios({ url: "https://pokeapi.co/api/v2/pokemon" })
+    axios
+      .get("https://pokeapi.co/api/v2/pokemon", {
+        params: {
+          offset: offset,
+          limit: limit,
+        },
+      })
       .then((response) => {
         setIsLoading(false);
         setApiResponse(response.data);
@@ -150,9 +160,12 @@ function PokeDex() {
                 <option value="descending">Descending</option>
               </select>{" "}
             </div>
+
+//add pagination
             <div>
               <PokemonListView pokemon={pokemonsFiltered} />
             </div>
+
           </>
         )}
       </header>
