@@ -15,6 +15,7 @@ function PokeDex() {
   const [sortIsAsc, setSortIsAsc] = useState(true);
 
   const [offset, setOffset] = useState(0);
+  const [pageCounter, setPageCounter] = useState(0);
   let limit = 20;
 
   const customStyles = {
@@ -53,8 +54,8 @@ function PokeDex() {
         setIsLoading(false);
         setApiResponse(response.data);
         console.log(apiResponse);
-        setPokemons(response.data.results);
-        setPokemonsFiltered(response.data.results);
+        setPokemons(response.data.results); 
+        setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
       })
       .catch((err) => {
         console.log(err);
@@ -76,13 +77,11 @@ function PokeDex() {
 
   function doSorting(value) {
     if (value.target.value === "ascending") {
-      setSortIsAsc(false);
-      const asc = [...pokemons].sort((a, b) => (a.name > b.name ? 1 : -1));
-      setPokemonsFiltered(asc);
+      setSortIsAsc(false); 
+      setPokemonsFiltered([...pokemons].sort((a, b) => (a.name > b.name ? 1 : -1)));
     } else {
-      setSortIsAsc(true);
-      const dsc = [...pokemons].sort((a, b) => (b.name > a.name ? 1 : -1));
-      setPokemonsFiltered(dsc);
+      setSortIsAsc(true); 
+      setPokemonsFiltered([...pokemons].sort((a, b) => (b.name > a.name ? 1 : -1)));
     }
   }
   //added to see react loading longer
@@ -161,7 +160,7 @@ function PokeDex() {
               </select>{" "}
             </div>
 
-//add pagination
+{/* //add pagination */}
             <div>
               <PokemonListView pokemon={pokemonsFiltered} />
             </div>

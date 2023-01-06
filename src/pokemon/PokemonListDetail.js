@@ -3,7 +3,7 @@ import React from "react";
 import Modal from "react-modal";
 import PokemonStatsTable from "./PokemonStatsTable";
 import PokemonStatsBarChart from "./PokemonStatsBarChart";
-import jsPDF from "jspdf";
+import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 
 function PokemonListDetail(props) {
@@ -99,25 +99,14 @@ function PokemonListDetail(props) {
           console.log(err);
           alert("Error occured during getting the data...");
         });
-        
+
       setShow(true);
     }
   }
-
-  function downloadAsPDF() {
-    console.log("donlot");
-    console.log(downloadPdfRef.current);
-    console.log(barChartRef.current);
-
-    const doc = new jsPDF();
-    doc.html(downloadPdfRef.current, {
-      callback: function (doc) {
-        doc.save("sample.pdf");
-      },
-      html2canvas: { scale: 0.2 },
-    });
-  }
-
+  const handlePrint = useReactToPrint({
+    content: () => downloadPdfRef.current,
+  });
+  
   return (
     <div>
       <li
@@ -151,7 +140,7 @@ function PokemonListDetail(props) {
                 <h3> Stats: </h3>
                 <PokemonStatsTable pokemonStats={stats} />
                 <PokemonStatsBarChart data={labelChart} ref={barChartRef} />
-                <button onClick={downloadAsPDF}>Download as PDF</button>
+                <button onClick={handlePrint}>Download as PDF</button>
               </div>
             )}
             <div id="test">

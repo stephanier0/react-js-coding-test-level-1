@@ -14,8 +14,10 @@
     "react-google-charts": "^4.0.0",
     "react-loading": "^2.0.3",
     "react-modal": "^3.13.1",
+    "react-paginate": "^8.1.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^5.0.1",
+    "react-to-print": "^2.14.11",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
