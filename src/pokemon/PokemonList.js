@@ -2,9 +2,9 @@ import PokemonListDetail from "./PokemonListDetail";
 
 function PokemonListView(props) {
   return (
-    <ol style={{ listStyle: 'none' }}>
+    <ol style={{ listStyle: "none" }}>
       {props.pokemon.map((item) => (
-        <PokemonListDetail each={item} />
+        <PokemonListDetail each={item} key={item.name} />
       ))}
     </ol>
   );

@@ -4,6 +4,7 @@ import Modal from "react-modal";
 import PokemonStatsTable from "./PokemonStatsTable";
 import PokemonStatsBarChart from "./PokemonStatsBarChart";
 import jsPDF from "jspdf";
+import axios from "axios";
 
 function PokemonListDetail(props) {
   const [hover, setHover] = useState(false);
@@ -42,23 +43,46 @@ function PokemonListDetail(props) {
       eachPokemonData = null;
       setPokemonDetailInfo(false);
     } else {
-      setShow(true);
-      const url = props.each.url;
-      fetch(url)
-        .then((data) => {
-          return data.json();
-        })
+      // const url = props.each.url;
+      // fetch(url)
+      //   .then((data) => {
+      //     return data.json();
+      //   })
+      //   .then((response) => {
+      //     eachPokemonData = response;
+      //     setEachPokemonState(eachPokemonData);
+
+      //     spritesData = response.sprites;
+      //     setSprites(spritesData);
+
+      //     let statsData = [];
+      //     let chartLabel = [];
+      //     for (const idx in response.stats) {
+      //       const idxItem = { ...response.stats[idx] };
+      //       statsData.push(idxItem);
+
+      //       const tempItemChart = {
+      //         text: idxItem.stat.name,
+      //         value: idxItem.base_stat,
+      //       };
+      //       chartLabel.push(tempItemChart);
+      //     }
+      //     setStats(statsData);
+      //     setLabelChart(chartLabel);
+      //     setPokemonDetailInfo(true);
+      //   });
+      axios({ url: props.each.url })
         .then((response) => {
-          eachPokemonData = response;
+          eachPokemonData = response.data;
           setEachPokemonState(eachPokemonData);
 
-          spritesData = response.sprites;
+          spritesData = response.data.sprites;
           setSprites(spritesData);
 
           let statsData = [];
           let chartLabel = [];
-          for (const idx in response.stats) {
-            const idxItem = { ...response.stats[idx] };
+          for (const idx in response.data.stats) {
+            const idxItem = { ...response.data.stats[idx] };
             statsData.push(idxItem);
 
             const tempItemChart = {
@@ -70,15 +94,21 @@ function PokemonListDetail(props) {
           setStats(statsData);
           setLabelChart(chartLabel);
           setPokemonDetailInfo(true);
+        })
+        .catch((err) => {
+          console.log(err);
+          alert("Error occured during getting the data...");
         });
+        
+      setShow(true);
     }
   }
 
   function downloadAsPDF() {
-    console.log("donlot");  
+    console.log("donlot");
     console.log(downloadPdfRef.current);
-    console.log(barChartRef.current); 
-     
+    console.log(barChartRef.current);
+
     const doc = new jsPDF();
     doc.html(downloadPdfRef.current, {
       callback: function (doc) {

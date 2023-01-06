@@ -1,16 +1,18 @@
 import "./App.css";
 import { useState, useEffect, useRef } from "react";
 import ReactLoading from "react-loading";
-// import axios from "axios";
+import axios from "axios";
 import Modal from "react-modal";
 import PokemonListView from "./pokemon/PokemonList";
 
 function PokeDex() {
+  const [apiResponse, setApiResponse] = useState(null);
   const [pokemons, setPokemons] = useState([]);
   const [pokemonsFiltered, setPokemonsFiltered] = useState([]);
   const [pokemonDetail, setPokemonDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const nameFilter = useRef();
+  const [sortIsAsc, setSortIsAsc] = useState(true);
 
   const customStyles = {
     content: {
@@ -27,21 +29,31 @@ function PokeDex() {
   };
 
   useEffect(() => {
-    fetch("https://pokeapi.co/api/v2/pokemon")
-      .then((data) => {
-        return data.json();
-      })
-      .then((result) => {
-        setPokemons(result.results);
-        setPokemonsFiltered(result.results);
+    // fetch("https://pokeapi.co/api/v2/pokemon")
+    //   .then((data) => {
+    //     return data.json();
+    //   })
+    //   .then((result) => {
+    //     setPokemons(result.results);
+    //     setPokemonsFiltered(result.results);
+    //     setIsLoading(false);
+    //   });
+    axios({ url: "https://pokeapi.co/api/v2/pokemon" })
+      .then((response) => {
         setIsLoading(false);
+        setApiResponse(response.data);
+        console.log(apiResponse);
+        setPokemons(response.data.results);
+        setPokemonsFiltered(response.data.results);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Error occured during getting the data...");
       });
   }, []);
 
   function doFilter() {
-    console.log("filter: " + nameFilter.current.value);
     const filter = nameFilter.current.value;
-    console.log(pokemonsFiltered);
     setPokemonsFiltered([]);
     const temp = [];
     for (const idx in pokemons) {
@@ -50,6 +62,18 @@ function PokeDex() {
       }
     }
     setPokemonsFiltered(temp);
+  }
+
+  function doSorting(value) {
+    if (value.target.value === "ascending") {
+      setSortIsAsc(false);
+      const asc = [...pokemons].sort((a, b) => (a.name > b.name ? 1 : -1));
+      setPokemonsFiltered(asc);
+    } else {
+      setSortIsAsc(true);
+      const dsc = [...pokemons].sort((a, b) => (b.name > a.name ? 1 : -1));
+      setPokemonsFiltered(dsc);
+    }
   }
   //added to see react loading longer
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -119,7 +143,16 @@ function PokeDex() {
                 onKeyUp={doFilter}
               ></input>
             </span>
-            <PokemonListView pokemon={pokemonsFiltered} />
+            <div>
+              Sort by:{" "}
+              <select onChange={doSorting}>
+                <option value="ascending">Ascending</option>
+                <option value="descending">Descending</option>
+              </select>{" "}
+            </div>
+            <div>
+              <PokemonListView pokemon={pokemonsFiltered} />
+            </div>
           </>
         )}
       </header>
