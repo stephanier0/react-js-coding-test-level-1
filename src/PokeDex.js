@@ -68,44 +68,48 @@ function PokeDex() {
     const filter = nameFilter.current.value;
     setPokemonsFiltered([]);
     // to allow 1st filter call to fetch all data since it has a lot of pokemon
-    if (allPokemonForFilter === null) {
-      axios
-        .get("https://pokeapi.co/api/v2/pokemon", {
-          params: {
-            offset: offset,
-            limit: apiResponse.count,
-          },
-        })
-        .then((response) => {
-          console.log(response);
-          setAllPokemonForFilter(response.data.results);
-          const temp = [];
-          for (const idx in response.data.results) {
-            // console.log(response.data.results[idx].name.toLowerCase());
-            if (
-              response.data.results[idx].name.toLowerCase().includes(filter)
-            ) {
-              temp.push(response.data.results[idx]);
-            }
-          }
-          setPokemonsFiltered(temp);
-          // below part is to sort the list asc
-          // setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
-        })
-        .catch((err) => {
-          console.log(err);
-          alert("Error occured during getting the data...");
-        });
+    if (filter.length === 0) {
+      setPokemonsFiltered(pokemons);
     } else {
-      const temp = [];
-      for (const idx in allPokemonForFilter) {
-        // console.log(response.data.results[idx].name.toLowerCase());
-        if (allPokemonForFilter[idx].name.toLowerCase().includes(filter)) {
-          temp.push(allPokemonForFilter[idx]);
+      if (allPokemonForFilter === null) {
+        axios
+          .get("https://pokeapi.co/api/v2/pokemon", {
+            params: {
+              offset: offset,
+              limit: apiResponse.count,
+            },
+          })
+          .then((response) => {
+            console.log(response);
+            setAllPokemonForFilter(response.data.results);
+            const temp = [];
+            for (const idx in response.data.results) {
+              // console.log(response.data.results[idx].name.toLowerCase());
+              if (
+                response.data.results[idx].name.toLowerCase().includes(filter)
+              ) {
+                temp.push(response.data.results[idx]);
+              }
+            }
+            setPokemonsFiltered(temp);
+            // below part is to sort the list asc
+            // setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
+          })
+          .catch((err) => {
+            console.log(err);
+            alert("Error occured during getting the data...");
+          });
+      } else {
+        const temp = [];
+        for (const idx in allPokemonForFilter) {
+          // console.log(response.data.results[idx].name.toLowerCase());
+          if (allPokemonForFilter[idx].name.toLowerCase().includes(filter)) {
+            temp.push(allPokemonForFilter[idx]);
+          }
         }
-      }
 
-      setPokemonsFiltered(temp);
+        setPokemonsFiltered(temp);
+      }
     }
   }
 
@@ -267,7 +271,7 @@ function PokeDex() {
           }}
           style={customStyles}
         >
-          <div>
+          <div hidden="true">
             Requirement:
             <ul>
               <li>show the sprites front_default as the pokemon image</li>
