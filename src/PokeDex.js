@@ -4,6 +4,7 @@ import ReactLoading from "react-loading";
 import axios from "axios";
 import Modal from "react-modal";
 import PokemonListView from "./pokemon/PokemonList";
+import ReactPaginate from "react-paginate";
 
 function PokeDex() {
   const [apiResponse, setApiResponse] = useState(null);
@@ -12,12 +13,10 @@ function PokeDex() {
   const [pokemonDetail, setPokemonDetail] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const nameFilter = useRef();
-  const [sortIsAsc, setSortIsAsc] = useState(true);
-
   const [offset, setOffset] = useState(0);
-  const [pageCounter, setPageCounter] = useState(0);
   let limit = 20;
 
+  const [allPokemonForFilter, setAllPokemonForFilter] = useState(null);
   const customStyles = {
     content: {
       top: "50%",
@@ -53,9 +52,11 @@ function PokeDex() {
       .then((response) => {
         setIsLoading(false);
         setApiResponse(response.data);
-        console.log(apiResponse);
-        setPokemons(response.data.results); 
-        setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
+        setPageCount(Math.ceil(response.data.count / limit));
+        setPokemons(response.data.results);
+        setPokemonsFiltered(response.data.results);
+        // below part is to sort the list asc
+        // setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
       })
       .catch((err) => {
         console.log(err);
@@ -66,24 +67,92 @@ function PokeDex() {
   function doFilter() {
     const filter = nameFilter.current.value;
     setPokemonsFiltered([]);
-    const temp = [];
-    for (const idx in pokemons) {
-      if (pokemons[idx].name.toLowerCase().includes(filter)) {
-        temp.push(pokemons[idx]);
+    // to allow 1st filter call to fetch all data since it has a lot of pokemon
+    if (allPokemonForFilter === null) {
+      axios
+        .get("https://pokeapi.co/api/v2/pokemon", {
+          params: {
+            offset: offset,
+            limit: apiResponse.count,
+          },
+        })
+        .then((response) => {
+          console.log(response);
+          setAllPokemonForFilter(response.data.results);
+          const temp = [];
+          for (const idx in response.data.results) {
+            // console.log(response.data.results[idx].name.toLowerCase());
+            if (
+              response.data.results[idx].name.toLowerCase().includes(filter)
+            ) {
+              temp.push(response.data.results[idx]);
+            }
+          }
+          setPokemonsFiltered(temp);
+          // below part is to sort the list asc
+          // setPokemonsFiltered([...response.data.results].sort((a, b) => (a.name > b.name ? 1 : -1)));
+        })
+        .catch((err) => {
+          console.log(err);
+          alert("Error occured during getting the data...");
+        });
+    } else {
+      const temp = [];
+      for (const idx in allPokemonForFilter) {
+        // console.log(response.data.results[idx].name.toLowerCase());
+        if (allPokemonForFilter[idx].name.toLowerCase().includes(filter)) {
+          temp.push(allPokemonForFilter[idx]);
+        }
       }
+
+      setPokemonsFiltered(temp);
     }
-    setPokemonsFiltered(temp);
   }
 
   function doSorting(value) {
     if (value.target.value === "ascending") {
-      setSortIsAsc(false); 
-      setPokemonsFiltered([...pokemons].sort((a, b) => (a.name > b.name ? 1 : -1)));
-    } else {
-      setSortIsAsc(true); 
-      setPokemonsFiltered([...pokemons].sort((a, b) => (b.name > a.name ? 1 : -1)));
+      setPokemonsFiltered(
+        [...pokemonsFiltered].sort((a, b) => (a.name > b.name ? 1 : -1))
+      );
+    } else if (value.target.value === "descending") {
+      setPokemonsFiltered(
+        [...pokemonsFiltered].sort((a, b) => (b.name > a.name ? 1 : -1))
+      );
     }
   }
+
+  function toDefaultList() {
+    setPokemonsFiltered(pokemons);
+  }
+
+  const [itemOffset, setItemOffset] = useState(0);
+  const [pageCount, setPageCount] = useState(0);
+
+  const handlePageClick = (event) => {
+    const newOffset = (event.selected * limit) % apiResponse.count;
+    console.log(
+      `User requested page number ${event.selected}, which is offset ${newOffset}`
+    );
+    setItemOffset(newOffset);
+
+    axios
+      .get("https://pokeapi.co/api/v2/pokemon", {
+        params: {
+          offset: newOffset,
+          limit: limit,
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setPokemons(response.data.results);
+        setPokemonsFiltered(response.data.results);
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Error occured during getting the data...");
+      });
+  };
+
   //added to see react loading longer
   // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   // useEffect(() => {
@@ -154,17 +223,38 @@ function PokeDex() {
             </span>
             <div>
               Sort by:{" "}
-              <select onChange={doSorting}>
+              <select onChange={doSorting} style={{ fontSize: 16 }}>
+                <option value="none">None</option>
                 <option value="ascending">Ascending</option>
                 <option value="descending">Descending</option>
               </select>{" "}
             </div>
-
-{/* //add pagination */}
+            <button style={{ fontSize: 16 }} onClick={toDefaultList}>
+              To Default List
+            </button>
             <div>
               <PokemonListView pokemon={pokemonsFiltered} />
             </div>
-
+            <ReactPaginate
+              nextLabel="next >"
+              onPageChange={handlePageClick}
+              pageRangeDisplayed={3}
+              marginPagesDisplayed={2}
+              pageCount={pageCount}
+              previousLabel="< previous"
+              breakLabel="..."
+              breakCLassName="page-item"
+              breakLinkClassName="page-link"
+              containerClassName="pagination justify-content-center"
+              pageClassName="page-item"
+              pageLinkClassName="page-link"
+              previousClassName="page-item"
+              previousLinkClassName="page-link"
+              nextClassName="page-item"
+              nextLinkClassName="page-link"
+              activeClassName="active"
+              renderOnZeroPageCount={null}
+            />
           </>
         )}
       </header>
