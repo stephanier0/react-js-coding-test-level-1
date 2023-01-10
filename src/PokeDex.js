@@ -223,6 +223,7 @@ function PokeDex() {
                 id="nameFilter"
                 ref={nameFilter}
                 onKeyUp={doFilter}
+                style={{ fontSize: 16 }}
               ></input>
             </span>
             <div>
